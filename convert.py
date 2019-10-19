@@ -1,13 +1,14 @@
-from s2cloudless import S2PixelCloudDetector, CloudMaskRequest
-from xml.dom import minidom
-import sys
 import os
-import rasterio
-import numpy as np
-import matplotlib.pyplot as plt
+import sys
+from xml.dom import minidom
 
-#TODO: get data from image
-bands = ['B01','B02','B03', 'B04','B05','B06', 'B07','B08','B8A','B09','B10','B11','B12']
+import matplotlib.pyplot as plt
+import numpy as np
+import rasterio
+from s2cloudless import S2PixelCloudDetector
+
+# TODO: get data from image
+bands = ['B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B08', 'B8A', 'B09', 'B10', 'B11', 'B12']
 
 cloud_detector = S2PixelCloudDetector(threshold=0.4, average_over=4, dilation_size=2, all_bands=True)
 
@@ -29,6 +30,7 @@ pure_data = []
 
 RESULT_SIZE = 1830
 
+
 def plot_cloud_mask(mask, figsize=(15, 15), fig=None):
     """
     Utility function for plotting a binary cloud mask.
@@ -39,7 +41,8 @@ def plot_cloud_mask(mask, figsize=(15, 15), fig=None):
     plt.show()
     # plt.savefig('myfilename.png', dpi=100)
 
-root = xmldoc = minidom.parse(xml_path)
+
+root = minidom.parse(xml_path)
 for node in root.getElementsByTagName('IMAGE_FILE'):
     file_name = node.firstChild.nodeValue
     file_path = os.path.join(files_path, file_name) + ".jp2"
@@ -52,15 +55,15 @@ for node in root.getElementsByTagName('IMAGE_FILE'):
             # for r in range(len(file_data)):
             #     for f in range(len(file_data[r])):
             #         file_data[r][f] /= 10000
-            every_x = int(f.width/RESULT_SIZE)
-            every_y = int(f.height/RESULT_SIZE)
+            every_x = int(f.width / RESULT_SIZE)
+            every_y = int(f.height / RESULT_SIZE)
             resized = np.array(file_data)[::every_x, ::every_y]
             print(resized.shape)
             pure_data.append(resized)
 
 input_array = np.array([pure_data]) / 10000
 
-input_array.shape = (1, 1830, 1830, 13)
+input_array = input_array.reshape((1, 1830, 1830, 13))
 
 plot_cloud_mask(input_array[0])
 
@@ -68,7 +71,7 @@ print(input_array.shape)
 
 print("Mapping clouds")
 
-#cloud_probs = cloud_detector.get_cloud_probability_maps(input_array)
+# cloud_probs = cloud_detector.get_cloud_probability_maps(input_array)
 
 cloud_masks = cloud_detector.get_cloud_masks(input_array)
 

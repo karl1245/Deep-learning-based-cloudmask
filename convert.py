@@ -10,7 +10,7 @@ from s2cloudless import S2PixelCloudDetector
 # TODO: get data from image
 bands = ['B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B08', 'B8A', 'B09', 'B10', 'B11', 'B12']
 
-cloud_detector = S2PixelCloudDetector(threshold=0.4, average_over=4, dilation_size=2, all_bands=True)
+cloud_detector = S2PixelCloudDetector(threshold=0.8, average_over=4, dilation_size=2, all_bands=True)
 
 print(sys.argv)
 
@@ -61,11 +61,11 @@ for node in root.getElementsByTagName('IMAGE_FILE'):
             print(resized.shape)
             pure_data.append(resized)
 
-input_array = np.array([pure_data]) / 10000
+input_array = np.array(pure_data) / 10000
 
-input_array = input_array.reshape((1, 1830, 1830, 13))
+print(input_array.shape)
 
-plot_cloud_mask(input_array[0])
+input_array = input_array.T
 
 print(input_array.shape)
 
@@ -73,7 +73,7 @@ print("Mapping clouds")
 
 # cloud_probs = cloud_detector.get_cloud_probability_maps(input_array)
 
-cloud_masks = cloud_detector.get_cloud_masks(input_array)
+cloud_masks = cloud_detector.get_cloud_masks(np.array([input_array]))
 
 print("Mapping finished")
 print(cloud_masks.shape)

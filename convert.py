@@ -9,8 +9,9 @@ from s2cloudless import S2PixelCloudDetector
 
 # TODO: get data from image
 bands = ['B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B08', 'B8A', 'B09', 'B10', 'B11', 'B12']
+bands = ['B01', 'B02', 'B04', 'B05', 'B08', 'B8A', 'B09', 'B10', 'B11', 'B12']
 
-cloud_detector = S2PixelCloudDetector(threshold=0.8, average_over=4, dilation_size=2, all_bands=True)
+cloud_detector = S2PixelCloudDetector(threshold=0.4, average_over=4, dilation_size=2)
 
 print(sys.argv)
 
@@ -47,6 +48,9 @@ for node in root.getElementsByTagName('IMAGE_FILE'):
     file_name = node.firstChild.nodeValue
     file_path = os.path.join(files_path, file_name) + ".jp2"
 
+    if file_name[-3:] == "60m":
+        file_name = file_name[:-4]
+
     if file_name[-3:] in bands:
         print(f"Reading {file_name[-3:]}")
         with rasterio.open(file_path) as f:
@@ -61,6 +65,8 @@ for node in root.getElementsByTagName('IMAGE_FILE'):
             print(resized.shape)
             pure_data.append(resized)
 
+print(np.amax(pure_data))
+
 input_array = np.array(pure_data) / 10000
 
 print(input_array.shape)
@@ -71,11 +77,11 @@ print(input_array.shape)
 
 print("Mapping clouds")
 
-# cloud_probs = cloud_detector.get_cloud_probability_maps(input_array)
+cloud_masks = cloud_detector.get_cloud_probability_maps(np.array([input_array]))
 
-cloud_masks = cloud_detector.get_cloud_masks(np.array([input_array]))
+#cloud_masks = cloud_detector.get_cloud_masks(np.array([input_array]))
 
 print("Mapping finished")
 print(cloud_masks.shape)
 
-plot_cloud_mask(cloud_masks[0])
+plot_cloud_mask(cloud_masks[0].T)
